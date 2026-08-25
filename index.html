@@ -2,12 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,
-      initial-scale=1.0,
-      maximum-scale=1.0,
-      user-scalable=no">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Little Voices</title>
 
 <style>
@@ -16,452 +11,462 @@
         -webkit-tap-highlight-color: transparent;
     }
 
-    html,
-    body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: #ffffff;
+    :root {
+        color-scheme: light;
         font-family: Arial, Helvetica, sans-serif;
     }
 
+    html,
     body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        margin: 0;
+        min-width: 100%;
+        min-height: 100%;
+        background: #ffffff;
+    }
+
+    body {
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: auto;
+    }
+
+    button {
+        border: 0;
+        border-radius: 999px;
+        padding: 13px 22px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    button:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
     }
 
     #app {
-        width: 100vw;
-        height: 100vh;
-        height: 100dvh;
+        width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 20px;
     }
 
+    #setup,
+    #player {
+        width: min(100%, 560px);
+        text-align: center;
+    }
+
+    #setup h1 {
+        margin: 0 0 10px;
+        color: #262626;
+        font-size: clamp(1.5rem, 6vw, 2.2rem);
+    }
+
+    #setupIntro,
+    #setupStatus,
+    #instructions,
+    #playerStatus {
+        margin: 8px auto;
+        color: #555555;
+        line-height: 1.4;
+    }
+
+    #setupStatus {
+        min-height: 1.4em;
+        font-weight: 700;
+        color: #333333;
+    }
+
+    #recordingWord {
+        margin: 18px auto 8px;
+        color: #222222;
+        font-size: clamp(1.4rem, 7vw, 2.3rem);
+        font-weight: 700;
+    }
+
+    #recordingPicture {
+        margin: 0 auto 10px;
+        font-size: clamp(4rem, 22vw, 7rem);
+        line-height: 1;
+    }
+
+    #progress {
+        margin: 8px 0 18px;
+        color: #666666;
+        font-size: 0.95rem;
+    }
+
+    #recordButton {
+        background: #2f80ed;
+        color: #ffffff;
+    }
+
+    #recordButton.recording {
+        background: #d9363e;
+    }
+
+    #retryButton {
+        margin-top: 12px;
+        background: #eeeeee;
+        color: #333333;
+    }
+
+    #instructions {
+        max-width: 450px;
+        margin-top: 22px;
+        font-size: 0.92rem;
+    }
+
     #picture {
-        width: min(86vw, 86vh);
-        height: min(86vw, 86vh);
-
+        width: min(86vw, 86vh, 420px);
+        height: min(86vw, 86vh, 420px);
+        margin: 0 auto;
         border-radius: 50%;
-
         display: flex;
         align-items: center;
         justify-content: center;
-
         background: #f4f4f4;
-
-        font-size: min(38vw, 38vh);
-
+        font-size: min(38vw, 38vh, 11rem);
         user-select: none;
         -webkit-user-select: none;
-
         cursor: pointer;
-
-        box-shadow:
-            0 8px 30px rgba(0, 0, 0, 0.12);
-
-        transition:
-            transform 0.12s ease,
-            box-shadow 0.12s ease;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
     }
 
     #picture:active {
         transform: scale(0.94);
-        box-shadow:
-            0 4px 15px rgba(0, 0, 0, 0.10);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
     #picture.listened {
         animation: gentlePulse 0.35s ease;
     }
 
+    #playerStatus {
+        min-height: 1.4em;
+        margin-bottom: 14px;
+    }
+
     @keyframes gentlePulse {
-        0% {
-            transform: scale(1);
-        }
-
-        50% {
-            transform: scale(1.04);
-        }
-
-        100% {
-            transform: scale(1);
-        }
+        0% { transform: scale(1); }
+        50% { transform: scale(1.04); }
+        100% { transform: scale(1); }
     }
 </style>
 </head>
 
 <body>
-
 <div id="app">
-    <div id="picture" role="button" aria-label="Tap"></div>
+    <section id="setup" aria-labelledby="setupTitle">
+        <h1 id="setupTitle">Record your words</h1>
+        <p id="setupIntro">Allow microphone access, then record each word. These recordings stay only in this page until it is closed.</p>
+        <p id="setupStatus" role="status" aria-live="polite">Requesting microphone access…</p>
+
+        <div id="recordingPicture" aria-hidden="true">🐶</div>
+        <div id="recordingWord">Say: dog</div>
+        <div id="progress">Word 1 of 30</div>
+
+        <button id="recordButton" type="button" disabled>Record word</button>
+        <button id="retryButton" type="button" hidden>Try microphone again</button>
+
+        <p id="instructions">Tap Record word, say the word clearly, then tap Stop recording. Repeat until all 30 words are recorded.</p>
+    </section>
+
+    <main id="player" hidden>
+        <p id="playerStatus" role="status" aria-live="polite">Tap the picture to hear your voice.</p>
+        <div id="picture" role="button" tabindex="0" aria-label="Play recorded word"></div>
+    </main>
 </div>
 
 <script>
+'use strict';
 
-const objects = [
-
-    {
-        picture: "🐶",
-        words: {
-            en: "dog",
-            zu: "inja"
-        }
-    },
-
-    {
-        picture: "🐱",
-        words: {
-            en: "cat",
-            zu: "ikati"
-        }
-    },
-
-    {
-        picture: "🐦",
-        words: {
-            en: "bird",
-            zu: "inyoni"
-        }
-    },
-
-    {
-        picture: "🐟",
-        words: {
-            en: "fish",
-            zu: "inhlanzi"
-        }
-    },
-
-    {
-        picture: "🐄",
-        words: {
-            en: "cow",
-            zu: "inkomo"
-        }
-    },
-
-    {
-        picture: "🐔",
-        words: {
-            en: "chicken",
-            zu: "inkukhu"
-        }
-    },
-
-    {
-        picture: "🐘",
-        words: {
-            en: "elephant",
-            zu: "indlovu"
-        }
-    },
-
-    {
-        picture: "🦁",
-        words: {
-            en: "lion",
-            zu: "ibhubesi"
-        }
-    },
-
-    {
-        picture: "🍎",
-        words: {
-            en: "apple",
-            zu: "i-apula"
-        }
-    },
-
-    {
-        picture: "🍌",
-        words: {
-            en: "banana",
-            zu: "ubhanana"
-        }
-    },
-
-    {
-        picture: "🍊",
-        words: {
-            en: "orange",
-            zu: "iwolintshi"
-        }
-    },
-
-    {
-        picture: "🍞",
-        words: {
-            en: "bread",
-            zu: "isinkwa"
-        }
-    },
-
-    {
-        picture: "🥛",
-        words: {
-            en: "milk",
-            zu: "ubisi"
-        }
-    },
-
-    {
-        picture: "🥚",
-        words: {
-            en: "egg",
-            zu: "iqanda"
-        }
-    },
-
-    {
-        picture: "⚽",
-        words: {
-            en: "ball",
-            zu: "ibhola"
-        }
-    },
-
-    {
-        picture: "🚗",
-        words: {
-            en: "car",
-            zu: "imoto"
-        }
-    },
-
-    {
-        picture: "🚌",
-        words: {
-            en: "bus",
-            zu: "ibhasi"
-        }
-    },
-
-    {
-        picture: "🚲",
-        words: {
-            en: "bicycle",
-            zu: "ibhayisikili"
-        }
-    },
-
-    {
-        picture: "👟",
-        words: {
-            en: "shoe",
-            zu: "isicathulo"
-        }
-    },
-
-    {
-        picture: "👕",
-        words: {
-            en: "t-shirt",
-            zu: "ihembe"
-        }
-    },
-
-    {
-        picture: "🛏️",
-        words: {
-            en: "bed",
-            zu: "umbhede"
-        }
-    },
-
-    {
-        picture: "🪑",
-        words: {
-            en: "chair",
-            zu: "isihlalo"
-        }
-    },
-
-    {
-        picture: "🥄",
-        words: {
-            en: "spoon",
-            zu: "isipuni"
-        }
-    },
-
-    {
-        picture: "🥤",
-        words: {
-            en: "cup",
-            zu: "inkomishi"
-        }
-    },
-
-    {
-        picture: "📖",
-        words: {
-            en: "book",
-            zu: "incwadi"
-        }
-    },
-
-    {
-        picture: "🧸",
-        words: {
-            en: "bear",
-            zu: "ibhere"
-        }
-    },
-
-    {
-        picture: "☀️",
-        words: {
-            en: "sun",
-            zu: "ilanga"
-        }
-    },
-
-    {
-        picture: "🚚",
-        words: {
-            en: "truck",
-            zu: "iloli"
-        }
-    },
-
-    {
-        picture: "🌳",
-        words: {
-            en: "tree",
-            zu: "isihlahla"
-        }
-    },
-
-    {
-        picture: "🏒",
-        words: {
-            en: "hockey stick",
-            zu: "induku ye-hockey"
-        }
-    }
-
+const words = [
+    { picture: "🐶", word: "dog" },
+    { picture: "🐱", word: "cat" },
+    { picture: "🐦", word: "bird" },
+    { picture: "🐟", word: "fish" },
+    { picture: "🐄", word: "cow" },
+    { picture: "🐔", word: "chicken" },
+    { picture: "🐘", word: "elephant" },
+    { picture: "🦁", word: "lion" },
+    { picture: "🍎", word: "apple" },
+    { picture: "🍌", word: "banana" },
+    { picture: "🍊", word: "orange" },
+    { picture: "🍞", word: "bread" },
+    { picture: "🥛", word: "milk" },
+    { picture: "🥚", word: "egg" },
+    { picture: "⚽", word: "ball" },
+    { picture: "🚗", word: "car" },
+    { picture: "🚌", word: "bus" },
+    { picture: "🚲", word: "bicycle" },
+    { picture: "👟", word: "shoe" },
+    { picture: "👕", word: "t-shirt" },
+    { picture: "🛏️", word: "bed" },
+    { picture: "🪑", word: "chair" },
+    { picture: "🥄", word: "spoon" },
+    { picture: "🥤", word: "cup" },
+    { picture: "📖", word: "book" },
+    { picture: "🧸", word: "bear" },
+    { picture: "☀️", word: "sun" },
+    { picture: "🚚", word: "truck" },
+    { picture: "🌳", word: "tree" },
+    { picture: "🏒", word: "hockey stick" }
 ];
 
-const languages = ["en", "zu"];
-
-let objectIndex = 0;
-let languageIndex = 0;
-let voices = [];
-
-function updateVoices() {
-    if ("speechSynthesis" in window) {
-        voices = window.speechSynthesis.getVoices();
-    }
-}
-
-if ("speechSynthesis" in window) {
-    updateVoices();
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-        window.speechSynthesis.onvoiceschanged = updateVoices;
-    }
-}
-
-function getBestVoice(lang) {
-    if (!voices || voices.length === 0) {
-        updateVoices();
-    }
-    // 1. Exact match (e.g. en-ZA, zu-ZA)
-    let voice = voices.find(v => v.lang && v.lang.toLowerCase() === lang.toLowerCase());
-    if (voice) return voice;
-
-    // 2. Prefix match (e.g. en for en-ZA, zu for zu-ZA)
-    const primary = lang.split('-')[0].toLowerCase();
-    voice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(primary));
-    if (voice) return voice;
-
-    return null;
-}
-
+const setup = document.getElementById("setup");
+const setupStatus = document.getElementById("setupStatus");
+const recordingPicture = document.getElementById("recordingPicture");
+const recordingWord = document.getElementById("recordingWord");
+const progress = document.getElementById("progress");
+const recordButton = document.getElementById("recordButton");
+const retryButton = document.getElementById("retryButton");
+const player = document.getElementById("player");
+const playerStatus = document.getElementById("playerStatus");
 const picture = document.getElementById("picture");
 
-function showObject() {
-    picture.textContent = objects[objectIndex].picture;
+// Recordings are deliberately kept in memory only. Closing or refreshing the page clears them.
+const recordings = new Array(words.length).fill(null);
+let recordingIndex = 0;
+let currentWordIndex = 0;
+let mediaStream = null;
+let mediaRecorder = null;
+let audioChunks = [];
+let currentAudio = null;
+let lastInteractionTime = 0;
+
+function setSetupStatus(message, isError = false) {
+    setupStatus.textContent = message;
+    setupStatus.style.color = isError ? "#b42318" : "#333333";
 }
 
-function speakWord() {
-    const object = objects[objectIndex];
-    const language = languages[languageIndex];
-    const word = object.words[language];
+function updateRecordingPrompt() {
+    const item = words[recordingIndex];
+    recordingPicture.textContent = item.picture;
+    recordingWord.textContent = `Say: ${item.word}`;
+    progress.textContent = `Word ${recordingIndex + 1} of ${words.length}`;
+}
 
-    if (!("speechSynthesis" in window)) {
+function getRecordingOptions() {
+    const options = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/ogg;codecs=opus"
+    ];
+
+    if (typeof MediaRecorder === "undefined") {
+        return {};
+    }
+
+    const supportedType = typeof MediaRecorder.isTypeSupported === "function"
+        ? options.find(type => MediaRecorder.isTypeSupported(type))
+        : null;
+    return supportedType ? { mimeType: supportedType } : {};
+}
+
+async function requestMicrophone() {
+    retryButton.hidden = true;
+    recordButton.disabled = true;
+    setSetupStatus("Requesting microphone access…");
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === "undefined") {
+        setSetupStatus("This browser does not support voice recording. Please use a recent version of Chrome, Edge, or Safari.", true);
+        retryButton.hidden = false;
         return;
     }
 
-    window.speechSynthesis.cancel();
-    if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
+    try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recordButton.disabled = false;
+        setSetupStatus("Microphone ready. Record the word shown below.");
+    } catch (error) {
+        console.error("Microphone access failed:", error);
+        setSetupStatus("Microphone access is needed. Allow it in your browser, then try again.", true);
+        retryButton.hidden = false;
+    }
+}
+
+function startRecording() {
+    if (!mediaStream || mediaRecorder) {
+        return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(word);
+    audioChunks = [];
 
-    if (language === "en") {
-        utterance.lang = "en-ZA";
-        const voice = getBestVoice("en-ZA");
-        if (voice) utterance.voice = voice;
-    } else if (language === "zu") {
-        utterance.lang = "zu-ZA";
-        const voice = getBestVoice("zu-ZA");
-        if (voice) utterance.voice = voice;
+    try {
+        mediaRecorder = new MediaRecorder(mediaStream, getRecordingOptions());
+    } catch (error) {
+        console.error("Could not create recorder:", error);
+        setSetupStatus("Voice recording could not be started. Please try the microphone again.", true);
+        retryButton.hidden = false;
+        return;
     }
 
-    // Slow rate for child understanding
-    utterance.rate = 0.65;
-    utterance.pitch = 1.05;
-    utterance.volume = 1.0;
+    mediaRecorder.addEventListener("dataavailable", event => {
+        if (event.data && event.data.size > 0) {
+            audioChunks.push(event.data);
+        }
+    });
 
-    window.speechSynthesis.speak(utterance);
+    mediaRecorder.addEventListener("stop", saveRecording);
+    mediaRecorder.addEventListener("error", event => {
+        console.error("Recording error:", event.error);
+        mediaRecorder = null;
+        recordButton.disabled = false;
+        recordButton.classList.remove("recording");
+        setSetupStatus("There was a problem recording that word. Please try again.", true);
+    });
+
+    mediaRecorder.start();
+    recordButton.textContent = "Stop recording";
+    recordButton.classList.add("recording");
+    setSetupStatus(`Recording “${words[recordingIndex].word}”…`);
+}
+
+function stopRecording() {
+    if (!mediaRecorder || mediaRecorder.state === "inactive") {
+        return;
+    }
+
+    recordButton.disabled = true;
+    setSetupStatus("Saving recording…");
+    mediaRecorder.stop();
+}
+
+function saveRecording() {
+    const recorder = mediaRecorder;
+    mediaRecorder = null;
+    recordButton.disabled = false;
+    recordButton.classList.remove("recording");
+    recordButton.textContent = "Record word";
+
+    if (!audioChunks.length) {
+        setSetupStatus("Nothing was recorded. Please try that word again.", true);
+        return;
+    }
+
+    const blobType = recorder && recorder.mimeType ? recorder.mimeType : "audio/webm";
+    const blob = new Blob(audioChunks, { type: blobType });
+    audioChunks = [];
+
+    if (blob.size === 0) {
+        setSetupStatus("Nothing was recorded. Please try that word again.", true);
+        return;
+    }
+
+    if (recordings[recordingIndex]) {
+        URL.revokeObjectURL(recordings[recordingIndex].url);
+    }
+
+    recordings[recordingIndex] = {
+        blob,
+        url: URL.createObjectURL(blob)
+    };
+
+    if (recordingIndex === words.length - 1) {
+        finishSetup();
+        return;
+    }
+
+    recordingIndex += 1;
+    updateRecordingPrompt();
+    setSetupStatus("Saved. Record the next word.");
+}
+
+function finishSetup() {
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+    }
+
+    setup.hidden = true;
+    player.hidden = false;
+    showObject();
+    playerStatus.textContent = "All 30 recordings are ready. Tap the picture to hear your voice.";
+}
+
+function showObject() {
+    picture.textContent = words[currentWordIndex].picture;
+}
+
+function playCurrentWord() {
+    const wordIndex = currentWordIndex;
+    const recording = recordings[wordIndex];
+
+    if (!recording) {
+        playerStatus.textContent = "That word has not been recorded yet.";
+        return;
+    }
+
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
+
+    currentAudio = new Audio(recording.url);
+    currentAudio.play().catch(error => {
+        console.error("Audio playback failed:", error);
+        playerStatus.textContent = "The recording could not be played. Tap the picture to try again.";
+    });
 
     picture.classList.remove("listened");
     void picture.offsetWidth;
     picture.classList.add("listened");
 
-    advance();
-}
-
-function advance() {
-    languageIndex++;
-
-    if (languageIndex >= languages.length) {
-        languageIndex = 0;
-        objectIndex++;
-
-        if (objectIndex >= objects.length) {
-            objectIndex = 0;
-        }
-    }
-
+    currentWordIndex = (wordIndex + 1) % words.length;
     showObject();
 }
-
-let lastInteractionTime = 0;
 
 function handleInteraction(event) {
     const now = Date.now();
     if (now - lastInteractionTime < 400) {
         return;
     }
+
     lastInteractionTime = now;
     event.preventDefault();
-    speakWord();
+    playCurrentWord();
 }
 
+recordButton.addEventListener("click", () => {
+    if (mediaRecorder) {
+        stopRecording();
+    } else {
+        startRecording();
+    }
+});
+
+retryButton.addEventListener("click", requestMicrophone);
 picture.addEventListener("click", handleInteraction);
-picture.addEventListener("touchend", handleInteraction);
+picture.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+        handleInteraction(event);
+    }
+});
 
-showObject();
+window.addEventListener("beforeunload", () => {
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+    }
 
+    if (currentAudio) {
+        currentAudio.pause();
+    }
+
+    recordings.forEach(recording => {
+        if (recording) URL.revokeObjectURL(recording.url);
+    });
+});
+
+updateRecordingPrompt();
+requestMicrophone();
 </script>
-
 </body>
 </html>
