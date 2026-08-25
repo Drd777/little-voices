@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1.0,
+      maximum-scale=1.0,
+      user-scalable=no">
+
+<title>Little Voices</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #ffffff;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #app {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    #picture {
+        width: min(86vw, 86vh);
+        height: min(86vw, 86vh);
+
+        border-radius: 50%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: #f4f4f4;
+
+        font-size: min(38vw, 38vh);
+
+        user-select: none;
+        -webkit-user-select: none;
+
+        cursor: pointer;
+
+        box-shadow:
+            0 8px 30px rgba(0, 0, 0, 0.12);
+
+        transition:
+            transform 0.12s ease,
+            box-shadow 0.12s ease;
+    }
+
+    #picture:active {
+        transform: scale(0.94);
+        box-shadow:
+            0 4px 15px rgba(0, 0, 0, 0.10);
+    }
+
+    #picture.listened {
+        animation: gentlePulse 0.35s ease;
+    }
+
+    @keyframes gentlePulse {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.04);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div id="app">
+    <div id="picture" role="button" aria-label="Tap"></div>
+</div>
+
+<script>
+
+const objects = [
+
+    {
+        picture: "🐶",
+        words: {
+            en: "dog",
+            zu: "inja",
+            es: "perro"
+        }
+    },
+
+    {
+        picture: "🐱",
+        words: {
+            en: "cat",
+            zu: "ikati",
+            es: "gato"
+        }
+    },
+
+    {
+        picture: "🐦",
+        words: {
+            en: "bird",
+            zu: "inyoni",
+            es: "pájaro"
+        }
+    },
+
+    {
+        picture: "🐟",
+        words: {
+            en: "fish",
+            zu: "inhlanzi",
+            es: "pez"
+        }
+    },
+
+    {
+        picture: "🐄",
+        words: {
+            en: "cow",
+            zu: "inkomo",
+            es: "vaca"
+        }
+    },
+
+    {
+        picture: "🐔",
+        words: {
+            en: "chicken",
+            zu: "inkukhu",
+            es: "pollo"
+        }
+    },
+
+    {
+        picture: "🐘",
+        words: {
+            en: "elephant",
+            zu: "indlovu",
+            es: "elefante"
+        }
+    },
+
+    {
+        picture: "🦁",
+        words: {
+            en: "lion",
+            zu: "ibhubesi",
+            es: "león"
+        }
+    },
+
+    {
+        picture: "🍎",
+        words: {
+            en: "apple",
+            zu: "i-apula",
+            es: "manzana"
+        }
+    },
+
+    {
+        picture: "🍌",
+        words: {
+            en: "banana",
+            zu: "ubhanana",
+            es: "plátano"
+        }
+    },
+
+    {
+        picture: "🍊",
+        words: {
+            en: "orange",
+            zu: "iwolintshi",
+            es: "naranja"
+        }
+    },
+
+    {
+        picture: "🍞",
+        words: {
+            en: "bread",
+            zu: "isinkwa",
+            es: "pan"
+        }
+    },
+
+    {
+        picture: "🥛",
+        words: {
+            en: "milk",
+            zu: "ubisi",
+            es: "leche"
+        }
+    },
+
+    {
+        picture: "🥚",
+        words: {
+            en: "egg",
+            zu: "iqanda",
+            es: "huevo"
+        }
+    },
+
+    {
+        picture: "⚽",
+        words: {
+            en: "ball",
+            zu: "ibhola",
+            es: "pelota"
+        }
+    },
+
+    {
+        picture: "🚗",
+        words: {
+            en: "car",
+            zu: "imoto",
+            es: "coche"
+        }
+    },
+
+    {
+        picture: "🚌",
+        words: {
+            en: "bus",
+            zu: "ibhasi",
+            es: "autobús"
+        }
+    },
+
+    {
+        picture: "🚲",
+        words: {
+            en: "bicycle",
+            zu: "ibhayisikili",
+            es: "bicicleta"
+        }
+    },
+
+    {
+        picture: "👟",
+        words: {
+            en: "shoe",
+            zu: "isicathulo",
+            es: "zapato"
+        }
+    },
+
+    {
+        picture: "👕",
+        words: {
+            en: "t-shirt",
+            zu: "ihembe",
+            es: "camiseta"
+        }
+    },
+
+    {
+        picture: "🛏️",
+        words: {
+            en: "bed",
+            zu: "umbhede",
+            es: "cama"
+        }
+    },
+
+    {
+        picture: "🪑",
+        words: {
+            en: "chair",
+            zu: "isihlalo",
+            es: "silla"
+        }
+    },
+
+    {
+        picture: "🥄",
+        words: {
+            en: "spoon",
+            zu: "isipuni",
+            es: "cuchara"
+        }
+    },
+
+    {
+        picture: "🥤",
+        words: {
+            en: "cup",
+            zu: "inkomishi",
+            es: "taza"
+        }
+    },
+
+    {
+        picture: "📖",
+        words: {
+            en: "book",
+            zu: "incwadi",
+            es: "libro"
+        }
+    },
+
+    {
+        picture: "🧸",
+        words: {
+            en: "bear",
+            zu: "ibhere",
+            es: "oso"
+        }
+    },
+
+    {
+        picture: "☀️",
+        words: {
+            en: "sun",
+            zu: "ilanga",
+            es: "sol"
+        }
+    },
+
+    {
+        picture: "🚚",
+        words: {
+            en: "truck",
+            zu: "iloli",
+            es: "camión"
+        }
+    },
+
+    {
+        picture: "🌳",
+        words: {
+            en: "tree",
+            zu: "isihlahla",
+            es: "árbol"
+        }
+    },
+
+    {
+        picture: "🏒",
+        words: {
+            en: "hockey stick",
+            zu: "induku ye-hockey",
+            es: "palo de hockey"
+        }
+    }
+
+];
+
+const languages = ["en", "zu", "es"];
+
+let objectIndex = 0;
+let languageIndex = 0;
+
+const picture = document.getElementById("picture");
+
+function showObject() {
+
+    picture.textContent = objects[objectIndex].picture;
+
+}
+
+function speakWord() {
+
+    const object = objects[objectIndex];
+    const language = languages[languageIndex];
+
+    const word = object.words[language];
+
+    if (!("speechSynthesis" in window)) {
+        return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(word);
+
+    if (language === "en") {
+        utterance.lang = "en-ZA";
+    }
+
+    if (language === "zu") {
+        utterance.lang = "zu-ZA";
+    }
+
+    if (language === "es") {
+        utterance.lang = "es-ES";
+    }
+
+    utterance.rate = 0.75;
+    utterance.pitch = 1.05;
+    utterance.volume = 1.0;
+
+    window.speechSynthesis.speak(utterance);
+
+    picture.classList.remove("listened");
+
+    void picture.offsetWidth;
+
+    picture.classList.add("listened");
+
+    advance();
+
+}
+
+function advance() {
+
+    languageIndex++;
+
+    if (languageIndex >= languages.length) {
+
+        languageIndex = 0;
+
+        objectIndex++;
+
+        if (objectIndex >= objects.length) {
+            objectIndex = 0;
+        }
+
+    }
+
+    showObject();
+
+}
+
+picture.addEventListener("click", speakWord);
+
+picture.addEventListener("touchend", function(event) {
+
+    event.preventDefault();
+
+});
+
+showObject();
+
+</script>
+
+</body>
+</html>
