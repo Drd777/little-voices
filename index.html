@@ -144,8 +144,13 @@
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
-    #picture.listened {
-        animation: gentlePulse 0.35s ease;
+    #picture.dancing {
+        pointer-events: none;
+        animation: dance 0.55s ease-in-out infinite;
+    }
+
+    #picture.arrived {
+        animation: popIn 0.3s ease;
     }
 
     #playerStatus {
@@ -153,9 +158,17 @@
         margin-bottom: 14px;
     }
 
-    @keyframes gentlePulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.04); }
+    @keyframes dance {
+        0%, 100% { transform: rotate(-5deg) translateY(0); }
+        20% { transform: rotate(5deg) translateY(-3%); }
+        40% { transform: rotate(-5deg) translateY(0); }
+        60% { transform: rotate(5deg) translateY(-3%); }
+        80% { transform: rotate(-5deg) translateY(0); }
+    }
+
+    @keyframes popIn {
+        0% { transform: scale(0.85); }
+        60% { transform: scale(1.05); }
         100% { transform: scale(1); }
     }
 </style>
@@ -179,8 +192,8 @@
     </section>
 
     <main id="player" hidden>
-        <p id="playerStatus" role="status" aria-live="polite">Tap the picture to hear your voice.</p>
-        <div id="picture" role="button" tabindex="0" aria-label="Play recorded word"></div>
+        <p id="playerStatus" role="status" aria-live="polite">Tap the picture to hear your voice. It dances while your voice plays, then the next picture appears.</p>
+        <div id="picture" role="button" tabindex="0" aria-disabled="false" aria-label="Play recorded word"></div>
     </main>
 </div>
 
@@ -240,6 +253,7 @@ let mediaRecorder = null;
 let audioChunks = [];
 let currentAudio = null;
 let lastInteractionTime = 0;
+let isBusy = false;
 
 function setSetupStatus(message, isError = false) {
     setupStatus.textContent = message;
@@ -389,14 +403,21 @@ function finishSetup() {
     setup.hidden = true;
     player.hidden = false;
     showObject();
-    playerStatus.textContent = "All 30 recordings are ready. Tap the picture to hear your voice.";
+    playerStatus.textContent = "All 30 recordings are ready. Tap the picture to hear your voice. It dances while your voice plays, then the next picture appears.";
 }
 
 function showObject() {
     picture.textContent = words[currentWordIndex].picture;
+    picture.classList.remove("arrived");
+    void picture.offsetWidth;
+    picture.classList.add("arrived");
 }
 
 function playCurrentWord() {
+    if (isBusy) {
+        return;
+    }
+
     const wordIndex = currentWordIndex;
     const recording = recordings[wordIndex];
 
@@ -405,33 +426,73 @@ function playCurrentWord() {
         return;
     }
 
+    // Deactivate the button: it dances while the recorded word plays, and only
+    // changes to the next picture (and becomes tappable again) once the sound
+    // has finished.
+    isBusy = true;
+    picture.classList.add("dancing");
+    picture.setAttribute("aria-disabled", "true");
+
     if (currentAudio) {
         currentAudio.pause();
-        currentAudio.currentTime = 0;
     }
 
-    currentAudio = new Audio(recording.url);
-    currentAudio.play().catch(error => {
-        console.error("Audio playback failed:", error);
+    const audio = new Audio(recording.url);
+    currentAudio = audio;
+
+    let finished = false;
+    let watchdogTimer = null;
+
+    const finish = advance => {
+        if (finished) {
+            return;
+        }
+        finished = true;
+        clearTimeout(watchdogTimer);
+        picture.classList.remove("dancing");
+        picture.setAttribute("aria-disabled", "false");
+        isBusy = false;
+
+        if (advance) {
+            currentWordIndex = (wordIndex + 1) % words.length;
+            showObject();
+        }
+    };
+
+    audio.addEventListener("ended", () => finish(true));
+    audio.addEventListener("error", () => {
         playerStatus.textContent = "The recording could not be played. Tap the picture to try again.";
+        finish(false);
     });
 
-    picture.classList.remove("listened");
-    void picture.offsetWidth;
-    picture.classList.add("listened");
+    // Safety net so the button can never get stuck dancing if the "ended" event
+    // never arrives (e.g. playback stalled in a background tab). Word
+    // recordings are only a few seconds long.
+    watchdogTimer = setTimeout(() => {
+        audio.pause();
+        finish(true);
+    }, 15000);
 
-    currentWordIndex = (wordIndex + 1) % words.length;
-    showObject();
+    audio.play().catch(error => {
+        console.error("Audio playback failed:", error);
+        playerStatus.textContent = "The recording could not be played. Tap the picture to try again.";
+        finish(false);
+    });
 }
 
 function handleInteraction(event) {
+    event.preventDefault();
+
+    if (isBusy) {
+        return;
+    }
+
     const now = Date.now();
     if (now - lastInteractionTime < 400) {
         return;
     }
 
     lastInteractionTime = now;
-    event.preventDefault();
     playCurrentWord();
 }
 
